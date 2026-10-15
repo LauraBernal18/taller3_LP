@@ -50,4 +50,23 @@
 ;;                     ::= sub1       (primitiva-sub1)
 ;;                     ::= neg        (primitiva-negacion-booleana)
 
-;******************************************************************************************
+;;******************************************************************************************
+
+;;******************************************************************************************
+;Especificación Léxica
+
+(define scanner-spec-simple-interpreter
+'((white-sp (whitespace) skip)
+  (comment ("%" (arbno (not #\newline))) skip)
+  
+  (identifier ("@" letter (arbno (or letter digit "_" "?"))) symbol)
+
+  (text (letter (arbno (or letter digit "_"))) string)
+  
+  (number (digit (arbno digit)) number)
+  (number ("-" digit (arbno digit)) number)
+  (number (digit (arbno digit) "." digit (arbno digit)) number)
+  (number ("-" digit (arbno digit) "." digit (arbno digit)) number) ))
+
+;; en base al ejemplo practicado en clase
+
