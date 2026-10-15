@@ -42,7 +42,8 @@
 ;;                     ::= >       (primitiva-mayor)
 ;;                     ::= <       (primitiva-menor)
 ;;                     ::= >=      (primitiva-mayor-igual)
-;;                     ::= <=      (primitiva-menor-igual)  
+;;                     ::= <=      (primitiva-menor-igual)
+;;                     ::= !=      (primitiva-diferente)  
 ;;                     ::= ==      (primitiva-comparador-igual)
 
 ;; <primitiva-unaria>  ::= longitud   (primitiva-longitud)
@@ -70,3 +71,31 @@
 
 ;; en base al ejemplo practicado en clase
 
+
+;Especificación Sintáctica (gramática)
+(define grammar-simple-interpreter
+  '((program (expression) un-programa)
+    (expression (number) numero-lit)
+    (expression ("\"" text "\"") texto-lit)
+    (expression (identifier) var-exp)
+    (expression ("(" expression primitive-bin expression ")") primapp-bin-exp)
+    (expression (primite-un "(" expression ")") primapp-un-exp)
+
+    (primitive-bin ("+") primitiva-suma)
+    (primitive-bin ("~") primitiva-resta)
+    (primitive-bin ("/") primitiva-div)
+    (primitive-bin ("*") primitiva-multi)
+    (primitive-bin ("concat") primitiva-concat)
+    (primitive-bin (">") primitiva-mayor)
+    (primitive-bin ("<") primitiva-menor)
+    (primitive-bin (">=") primitiva-mayor-igual)
+    (primitive-bin ("<=") primitiva-menor-igual)
+    (primitive-bin ("!=") primitiva-diferente)
+    (primitive-bin ("==") primitiva-comparador-igual)
+
+    (primitive-un ("longitud") primitiva-longitud)
+    (primitive-un ("add1") primitiva-add1)
+    (primitive-un ("sub1") primitiva-sub1)
+    (primitive-un ("neg") primitiva-negacion-booleana)))
+    
+   
