@@ -80,7 +80,11 @@
     (expression (identifier) var-exp)
     (expression ("(" expression primitive-bin expression ")") primapp-bin-exp)
     (expression (primitive-un "(" expression ")") primapp-un-exp)
-
+    (expression ("Si" expression "{" expression "}""sino""{" expression "}") condicional-exp)
+    (expression ("declarar" "(" (arbno identifier "=" expression ";") ")" "{" expression "}") variableLocal-exp)
+    (expression ("procedimiento" "(" (separated-list identifier ",") ")" "{" expression "}") procedimiento-ex)
+    (expression ("evaluar" expression "(" (separated-list expression ",") ")" "finEval") app-exp)
+    
     (primitive-bin ("+") primitiva-suma)
     (primitive-bin ("~") primitiva-resta)
     (primitive-bin ("/") primitiva-div)
@@ -176,10 +180,52 @@
       
       (primapp-un-exp (prim exp1)
                       (let ((valor (eval-expression exp1 env)))
-                        (aplicar-primitiva-unaria prim valor))))))
+                        (aplicar-primitiva-unaria prim valor)))
+      (condicional-exp (test-exp true-exp false-exp)
+                       (if (= 0 (valor-verdad? (eval-expression test-exp env)))
+                           (eval-expression false-exp env)
+                           (eval-expression true-exp env)))
+      (variableLocal-exp (ids exps cuerpo)
+                   (let ((args (eval-rands exps env)))
+                     (eval-expression cuerpo
+                                      (extend-env ids args env))))
+      (procedimiento-ex (ids cuerpo) (cerradura ids cuerpo env))
+      (app-exp (exp exps)
+               (let ((proc (eval-expression exp env))
+                     (args (eval-rands exps env)))
+                 (if (procVal? proc)
+                     (apply-procedure proc args)
+                     (eopl:error 'eval-expression
+                                 "Attempt to apply non-procedure ~s" proc)))))))
+                           
+    
 
 ;;------------------------------------------------------------
 ;funciones auxiliares para aplicar eval-expression
+
+; Evalua cada expresion en el ambiente dado y devuelve la lista de valores (vista en clase)
+(define eval-rands
+  (lambda (rands env)
+    (map (lambda (x) (eval-rand x env)) rands)))
+
+; Evalua una sola expresion en el ambiente dado (vista en clase)
+(define eval-rand
+  (lambda (rand env)
+    (eval-expression rand env)))
+
+; datatype para la cerradura (vista en clase)
+(define-datatype procVal procVal?
+  (cerradura
+   (ids (list-of symbol?))
+   (exp expression?)
+   (amb environment?)))
+
+;apply-procedure: evalua el cuerpo de un procedimientos en el ambiente extendido correspondiente (vista en clase)
+(define apply-procedure
+  (lambda (proc args)
+    (cases procVal proc
+      (cerradura (ids body env)
+               (eval-expression body (extend-env ids args env))))))
 ;Operaciones primitivas binarias
 
 ;Evalua una operacion binaria usando los valores de sus dos operandos.
@@ -333,3 +379,30 @@ scan&parse
 (eval-program (scan&parse "neg(0)"))
 (eval-program (scan&parse "longitud(\"casa\")"))
 (eval-program (scan&parse "(\"buenos\" concat \"dias\")"))
+
+;Pruebas del condicional (punto 4)
+
+(scan&parse "Si (2+3) { 2 } sino { 3 }")
+(eval-program (scan&parse "Si (2+3) { 2 } sino { 3 }"))   ; 2
+(eval-program (scan&parse "Si (@a > @b) { 10 } sino { 20 }"))   ; 20
+(eval-program (scan&parse "Si 0 { \"si\" } sino { \"no\" }"))   ; "no"
+
+;Pruebas de declarar (punto 5)
+
+(scan&parse "declarar (@x=2;@y=3;@a=7;){ (@a + (@x ~ @y)) }")
+(eval-program (scan&parse "declarar (@x=2;@y=3;@a=7;){ (@a + (@x ~ @y)) }"))   ; 6
+(eval-program (scan&parse "declarar (@x=2;@y=3;@a=7;){ (@a + @b) }"))          ; 9
+(eval-program (scan&parse "declarar (@x=5;){ (@x * @x) }"))                    ; 25
+
+;Pruebas de procedimientos (punto 6)
+
+(scan&parse "procedimiento (@x,@y,@z) { ((@x + @y) + @z) }")
+(eval-program (scan&parse "procedimiento (@x,@y,@z) { ((@x + @y) + @z) }"))
+(eval-program (scan&parse "procedimiento (@x) { add1(@x) }"))
+(eval-program (scan&parse "procedimiento () { 5 }"))
+
+;Pruebas de evaluar procedimientos (punto 7)
+
+(eval-program (scan&parse "declarar (@x=2;@y=3;@a=procedimiento (@x,@y,@z) { ((@x + @y) + @z) };){ evaluar @a (1,2,@x) finEval }"))   ; 5
+(eval-program (scan&parse "evaluar procedimiento (@x) { add1(@x) } (4) finEval"))   ; 5
+(eval-program (scan&parse "declarar (@f=procedimiento () { 7 };){ evaluar @f () finEval }"))   ; 7
