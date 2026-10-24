@@ -7,7 +7,7 @@
 ;;LAURA VALENTINA BERNAL LOZADA - 2437088
 ;;LUIS SANTIAGO ARENAS HINCAPIÉ - 2435300
 ;;SAMUEL VARGAS VALDERRUTEN - 2537761
-;;DANIEL SANTIAGO MORA CHAVEZ - 2539841
+;;DANIEL SANTIAGO MORA CHAVES - 2539841
 ;
 ;;Repositorio: https://github.com/LauraBernal18/taller3_LP
 
@@ -84,6 +84,9 @@
     (expression ("declarar" "(" (arbno identifier "=" expression ";") ")" "{" expression "}") variableLocal-exp)
     (expression ("procedimiento" "(" (separated-list identifier ",") ")" "{" expression "}") procedimiento-ex)
     (expression ("evaluar" expression "(" (separated-list expression ",") ")" "finEval") app-exp)
+    ;Punto 8.1: Definir los llamados recursivos en la gramatica
+    (expression ("declarec" "(" (arbno identifier "(" (separated-list identifier ",") ")" "=" expression ";") ")" "{" expression "}")
+                declarec-exp)
     
     (primitive-bin ("+") primitiva-suma)
     (primitive-bin ("~") primitiva-resta)
@@ -196,7 +199,13 @@
                  (if (procVal? proc)
                      (apply-procedure proc args)
                      (eopl:error 'eval-expression
-                                 "Attempt to apply non-procedure ~s" proc)))))))
+                                 "Attempt to apply non-procedure ~s" proc))))
+      ;Punto 8.5
+      (declarec-exp (nombres-proc params cuerpos cuerpo-declarec)
+                    (eval-expression cuerpo-declarec
+                                     (extend-env-recursively nombres-proc params cuerpos env))))))
+
+         
                            
     
 
@@ -291,7 +300,12 @@
   (empty-env-record)
   (extended-env-record (syms (list-of symbol?))
                        (vals (list-of scheme-value?))
-                       (env environment?)))
+                       (env environment?))
+  ;Punto 8.2 Agregar el nuevo ambiente (ambiente recursivo)
+  (recursively-extended-env-record (nombres-proc (list-of symbol?))
+                                   (params (list-of (list-of symbol?)))
+                                   (cuerpos (list-of expression?))
+                                   (env environment?)))
 
 ;Acepta cualquier valor de Racket como valor valido del interprete.
 ;Se utiliza como predicado para almacenar numeros, textos y otros valores.
@@ -309,7 +323,17 @@
 ;variables que no esten en la lista actual.
 (define extend-env
   (lambda (simbolos valores ambiente)
-    (extended-env-record simbolos valores ambiente))) 
+    (extended-env-record simbolos valores ambiente)))
+
+;Punto 8.3
+;extend-env-recursively: <list-of symbols> <list-of <list-of symbols>> <list-of expressions> environment -> environment
+;Crea un ambiente extendido para procedimientos recursivos, recibe la lista con los nombres de las
+;funciones, una lista de listas que contiene los parametros de cada funcion, la lista con el cuerpo
+;de cada funcion y recibe un ambiente anterior, se usa para poder declarar procedimientos que se llamen
+;a ellos mismos.
+(define extend-env-recursively
+  (lambda (nombres-proc params cuerpos ambiente-anterior)
+    (recursively-extended-env-record nombres-proc params cuerpos ambiente-anterior)))
 
 
 ;Busca un simbolo en el ambiente y devuelve su valor.
@@ -324,7 +348,15 @@
                            (let ((posicion (list-find-position simbolo simbolos)))
                              (if (number? posicion)
                                  (list-ref valores posicion)
-                                 (buscar-variable ambiente-anterior simbolo)))))))
+                                 (buscar-variable ambiente-anterior simbolo))))
+      ;Punto 8.4
+      (recursively-extended-env-record (nombres-proc params cuerpos ambiente-anterior)
+                                       (let ((posicion (list-find-position simbolo nombres-proc)))
+                                         (if (number? posicion)
+                                             (cerradura (list-ref params posicion)
+                                                        (list-ref cuerpos posicion)
+                                                        ambiente)
+                                             (buscar-variable ambiente-anterior simbolo)))))))
 
 
 ;********************;****************************************************************************************
@@ -406,3 +438,36 @@ scan&parse
 (eval-program (scan&parse "declarar (@x=2;@y=3;@a=procedimiento (@x,@y,@z) { ((@x + @y) + @z) };){ evaluar @a (1,2,@x) finEval }"))   ; 5
 (eval-program (scan&parse "evaluar procedimiento (@x) { add1(@x) } (4) finEval"))   ; 5
 (eval-program (scan&parse "declarar (@f=procedimiento () { 7 };){ evaluar @f () finEval }"))   ; 7
+
+
+;*****************************************************************************************************
+;Desarrollo Ejercicios Punto 9
+
+;a.)
+
+
+;b.)Programa que calcula la suma de los primeros n enteros positivos de forma recursiva.
+;Ejemplo con (n = 5), resultado esperado: 15
+; "declarec (
+;    @sumaNaturales ( @n ) = Si @n {
+;                              (@n + evaluar @sumaNaturales ((@n ~ 1)) finEval)
+;                            } sino {
+;                              0
+;                            };
+; )
+; { evaluar @sumaNaturales (5) finEval }"
+
+
+;Ejemplo con (n = 10), resultado esperado: 55
+; "declarec (
+;    @sumaNaturales ( @n ) = Si @n {
+;                              (@n + evaluar @sumaNaturales ((@n ~ 1)) finEval)
+;                            } sino {
+;                              0
+;                            };
+; )
+; { evaluar @sumaNaturales (10) finEval }"
+
+
+;c.)
+;...
