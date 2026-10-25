@@ -495,7 +495,7 @@ scan&parse
 
 ;d.) Programa que sume los numeros pares de un rango de valores positivos
 ;Ejemplo con [2,7], resultado esperado: 12
-;declarec (
+;"declarec (
 ;   @esPar (@n) = Si (@n == 0) {
 ;                        1}
 ;          sino {
@@ -510,10 +510,10 @@ scan&parse
 ;                                                     } sino {
 ;                                                    evaluar @sumaParesRango ((@a + 1), @b) finEval}};
 ;)
-;{ evaluar @sumaParesRango (2, 7) finEval }
+;{ evaluar @sumaParesRango (2, 7) finEval }"
 
 ;Ejemplo con [1, 10], resultado esperado: 30
-;declarec (
+;"declarec (
 ;   @esPar (@n) = Si (@n == 0) {
 ;                        1}
 ;          sino {
@@ -528,9 +528,10 @@ scan&parse
 ;                                                     } sino {
 ;                                                    evaluar @sumaParesRango ((@a + 1), @b) finEval}};
 ;)
-;{ evaluar @sumaParesRango (1, 10) finEval }
+;{ evaluar @sumaParesRango (1, 10) finEval }"
 
-;e.)Decoradores
+;e.)Decorador: @saludar recibe el procedimiento @integrantes y retorna un procedimiento nuevo que agrega "Hola:" al inicio del texto de los integrantes.
+;Resultado esperado: "Hola:Laura_Luis_Samuel_y_Daniel"
 
 ;"declarar (
 ;          @integrantes = procedimiento () { \"Laura_Luis_Samuel_y_Daniel\" };
@@ -539,7 +540,8 @@ scan&parse
 ;                                   ){
 ;                        evaluar @decorate ( ) finEval}}"           
 
-;f.) Modificacion a decoradores para agregar mensaje al final
+;f.)Decorador con mensaje: @saludar recibe el procedimiento @integrantes y retorna un procedimiento que recibe un mensaje, agrega "Hola:" al inicio y el mensaje al final.
+;Resultado esperado: "Hola:Laura_Luis_Samuel_y_Daniel_ProfesoresFLP"
 
 ;"declarar (
 ;          @integrantes = procedimiento () { \"Laura_Luis_Samuel_y_Daniel\" };
