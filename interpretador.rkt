@@ -61,8 +61,11 @@
   (comment ("%" (arbno (not #\newline))) skip)
   
   (identifier ("@" letter (arbno (or letter digit "_" "?"))) symbol)
-
-  (text (letter (arbno (or letter digit "_"))) string)
+  
+; Se amplió la regla para el punto 9e y 9f, ahora se puede ":" dentro del texto y para que se pueda iniciar con "_"
+  
+  (text (letter (arbno (or letter digit "_" ":"))) string)
+  (text ("_" (arbno (or letter digit "_" ":"))) string)
   
   (number (digit (arbno digit)) number)
   (number ("-" digit (arbno digit)) number)
@@ -469,5 +472,78 @@ scan&parse
 ; { evaluar @sumaNaturales (10) finEval }"
 
 
-;c.)
-;...
+;c.) Programa recursivo que calcula el producto de dos enteros no negativos mediantes sumas sucesivas.
+;Ejemplo con 4x3, resultado esperado: 12
+;"declarec (
+;   @multiplicar (@a, @b) = Si @b {
+;                             (@a + evaluar @multiplicar (@a, (@b ~ 1)) finEval)
+;                          } sino {
+;                             0
+;                           };
+;)
+;{ evaluar @multiplicar (4, 3) finEval }"
+
+;Ejemplo con 5x0, resultado esperado: 0
+;"declarec (
+;   @multiplicar (@a, @b) = Si @b {
+;                             (@a + evaluar @multiplicar (@a, (@b ~ 1)) finEval)
+;                          } sino {
+;                             0
+;                           };
+;)
+;{ evaluar @multiplicar (5, 0) finEval }"
+
+;d.) Programa que sume los numeros pares de un rango de valores positivos
+;Ejemplo con [2,7], resultado esperado: 12
+;declarec (
+;   @esPar (@n) = Si (@n == 0) {
+;                        1}
+;          sino {
+;                Si (@n == 1) {
+;                              0}
+;                   sino { evaluar @esPar ((@n ~ 2)) finEval}
+;                };
+;   @sumaParesRango (@a, @b) = Si (@a > @b) { 0
+;                                             } sino {
+;                                                     Si (evaluar @esPar (@a) finEval == 1) {
+;                                                       (@a + evaluar @sumaParesRango ((@a + 1), @b) finEval)
+;                                                     } sino {
+;                                                    evaluar @sumaParesRango ((@a + 1), @b) finEval}};
+;)
+;{ evaluar @sumaParesRango (2, 7) finEval }
+
+;Ejemplo con [1, 10], resultado esperado: 30
+;declarec (
+;   @esPar (@n) = Si (@n == 0) {
+;                        1}
+;          sino {
+;                Si (@n == 1) {
+;                              0}
+;                   sino { evaluar @esPar ((@n ~ 2)) finEval}
+;                };
+;   @sumaParesRango (@a, @b) = Si (@a > @b) { 0
+;                                             } sino {
+;                                                     Si (evaluar @esPar (@a) finEval == 1) {
+;                                                       (@a + evaluar @sumaParesRango ((@a + 1), @b) finEval)
+;                                                     } sino {
+;                                                    evaluar @sumaParesRango ((@a + 1), @b) finEval}};
+;)
+;{ evaluar @sumaParesRango (1, 10) finEval }
+
+;e.)Decoradores
+
+;"declarar (
+;          @integrantes = procedimiento () { \"Laura_Luis_Samuel_y_Daniel\" };
+;          @saludar = procedimiento (@i) { procedimiento () { ( \"Hola:\" concat evaluar @i () finEval ) }};             
+;          ) { declarar ( @decorate = evaluar @saludar (@integrantes) finEval;
+;                                   ){
+;                        evaluar @decorate ( ) finEval}}"           
+
+;f.) Modificacion a decoradores para agregar mensaje al final
+
+;"declarar (
+;          @integrantes = procedimiento () { \"Laura_Luis_Samuel_y_Daniel\" };
+;          @saludar = procedimiento (@i) { procedimiento (@mensaje) { ( \"Hola:\" concat ( evaluar @i () finEval concat @mensaje ) ) }};             
+;          ) { declarar ( @decorate = evaluar @saludar (@integrantes) finEval;
+;                                  ){
+;                        evaluar @decorate (\"_ProfesoresFLP\") finEval}}"
