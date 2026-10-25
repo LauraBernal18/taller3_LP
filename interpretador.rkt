@@ -446,7 +446,19 @@ scan&parse
 ;*****************************************************************************************************
 ;Desarrollo Ejercicios Punto 9
 
-;a.)
+;a.)Programa que suma los dígitos de un número entero positivo.
+;Ejemplo con 147, resultado esperado: 12
+;"declarec (
+;          @residuo (@n) = Si (@n < 10) { @n } sino { evaluar @residuo ((@n ~ 10)) finEval };
+;          @cociente (@n) = Si (@n < 10) { 0 } sino {(1 + evaluar @cociente ((@n ~ 10)) finEval) };        
+;          @sumarDigitos (@n) = Si (@n == 0) {
+;                                   @n
+;                               } sino {
+;                                  (evaluar @residuo(@n) finEval +
+;                                   evaluar @sumarDigitos (evaluar @cociente(@n) finEval) finEval)
+;                               };
+;)
+;{ evaluar @sumarDigitos (147) finEval }"
 
 
 ;b.)Programa que calcula la suma de los primeros n enteros positivos de forma recursiva.
