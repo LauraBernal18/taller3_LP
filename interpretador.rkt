@@ -61,8 +61,11 @@
   (comment ("%" (arbno (not #\newline))) skip)
   
   (identifier ("@" letter (arbno (or letter digit "_" "?"))) symbol)
-
-  (text (letter (arbno (or letter digit "_"))) string)
+  
+; Se amplió la regla para el punto 9e y 9f, ahora se puede ":" dentro del texto y para que se pueda iniciar con "_"
+  
+  (text (letter (arbno (or letter digit "_" ":"))) string)
+  (text ("_" (arbno (or letter digit "_" ":"))) string)
   
   (number (digit (arbno digit)) number)
   (number ("-" digit (arbno digit)) number)
@@ -443,7 +446,19 @@ scan&parse
 ;*****************************************************************************************************
 ;Desarrollo Ejercicios Punto 9
 
-;a.)
+;a.)Programa que suma los dígitos de un número entero positivo.
+;Ejemplo con 147, resultado esperado: 12
+;"declarec (
+;          @residuo (@n) = Si (@n < 10) { @n } sino { evaluar @residuo ((@n ~ 10)) finEval };
+;          @cociente (@n) = Si (@n < 10) { 0 } sino {(1 + evaluar @cociente ((@n ~ 10)) finEval) };        
+;          @sumarDigitos (@n) = Si (@n == 0) {
+;                                   @n
+;                               } sino {
+;                                  (evaluar @residuo(@n) finEval +
+;                                   evaluar @sumarDigitos (evaluar @cociente(@n) finEval) finEval)
+;                               };
+;)
+;{ evaluar @sumarDigitos (147) finEval }"
 
 
 ;b.)Programa que calcula la suma de los primeros n enteros positivos de forma recursiva.
@@ -469,5 +484,80 @@ scan&parse
 ; { evaluar @sumaNaturales (10) finEval }"
 
 
-;c.)
-;...
+;c.) Programa recursivo que calcula el producto de dos enteros no negativos mediantes sumas sucesivas.
+;Ejemplo con 4x3, resultado esperado: 12
+;"declarec (
+;   @multiplicar (@a, @b) = Si @b {
+;                             (@a + evaluar @multiplicar (@a, (@b ~ 1)) finEval)
+;                          } sino {
+;                             0
+;                           };
+;)
+;{ evaluar @multiplicar (4, 3) finEval }"
+
+;Ejemplo con 5x0, resultado esperado: 0
+;"declarec (
+;   @multiplicar (@a, @b) = Si @b {
+;                             (@a + evaluar @multiplicar (@a, (@b ~ 1)) finEval)
+;                          } sino {
+;                             0
+;                           };
+;)
+;{ evaluar @multiplicar (5, 0) finEval }"
+
+;d.) Programa que sume los numeros pares de un rango de valores positivos
+;Ejemplo con [2,7], resultado esperado: 12
+;"declarec (
+;   @esPar (@n) = Si (@n == 0) {
+;                        1}
+;          sino {
+;                Si (@n == 1) {
+;                              0}
+;                   sino { evaluar @esPar ((@n ~ 2)) finEval}
+;                };
+;   @sumaParesRango (@a, @b) = Si (@a > @b) { 0
+;                                             } sino {
+;                                                     Si (evaluar @esPar (@a) finEval == 1) {
+;                                                       (@a + evaluar @sumaParesRango ((@a + 1), @b) finEval)
+;                                                     } sino {
+;                                                    evaluar @sumaParesRango ((@a + 1), @b) finEval}};
+;)
+;{ evaluar @sumaParesRango (2, 7) finEval }"
+
+;Ejemplo con [1, 10], resultado esperado: 30
+;"declarec (
+;   @esPar (@n) = Si (@n == 0) {
+;                        1}
+;          sino {
+;                Si (@n == 1) {
+;                              0}
+;                   sino { evaluar @esPar ((@n ~ 2)) finEval}
+;                };
+;   @sumaParesRango (@a, @b) = Si (@a > @b) { 0
+;                                             } sino {
+;                                                     Si (evaluar @esPar (@a) finEval == 1) {
+;                                                       (@a + evaluar @sumaParesRango ((@a + 1), @b) finEval)
+;                                                     } sino {
+;                                                    evaluar @sumaParesRango ((@a + 1), @b) finEval}};
+;)
+;{ evaluar @sumaParesRango (1, 10) finEval }"
+
+;e.)Decorador: @saludar recibe el procedimiento @integrantes y retorna un procedimiento nuevo que agrega "Hola:" al inicio del texto de los integrantes.
+;Resultado esperado: "Hola:Laura_Luis_Samuel_y_Daniel"
+
+;"declarar (
+;          @integrantes = procedimiento () { \"Laura_Luis_Samuel_y_Daniel\" };
+;          @saludar = procedimiento (@i) { procedimiento () { ( \"Hola:\" concat evaluar @i () finEval ) }};             
+;          ) { declarar ( @decorate = evaluar @saludar (@integrantes) finEval;
+;                                   ){
+;                        evaluar @decorate ( ) finEval}}"           
+
+;f.)Decorador con mensaje: @saludar recibe el procedimiento @integrantes y retorna un procedimiento que recibe un mensaje, agrega "Hola:" al inicio y el mensaje al final.
+;Resultado esperado: "Hola:Laura_Luis_Samuel_y_Daniel_ProfesoresFLP"
+
+;"declarar (
+;          @integrantes = procedimiento () { \"Laura_Luis_Samuel_y_Daniel\" };
+;          @saludar = procedimiento (@i) { procedimiento (@mensaje) { ( \"Hola:\" concat ( evaluar @i () finEval concat @mensaje ) ) }};             
+;          ) { declarar ( @decorate = evaluar @saludar (@integrantes) finEval;
+;                                  ){
+;                        evaluar @decorate (\"_ProfesoresFLP\") finEval}}"
